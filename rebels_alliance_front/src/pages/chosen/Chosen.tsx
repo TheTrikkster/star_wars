@@ -1,41 +1,69 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { RootState } from '../../redux/store';
-import { setLoading } from '../../redux/searchSlice';
+import { setLoading, setTranslateToWookiee } from '../../redux/searchSlice';
 import { PacmanLoader } from 'react-spinners';
 
 function Chosen() {
   const [details, setDetails] = useState<null | string[][]>(null);
-  const { id } = useParams();
-  const location = useLocation();
-  const isLoading = useSelector((state: RootState) => state.search.loading);
+  const [error, setError] = useState<string | null>(null);
+  const [hideWookie, setHideWookie] = useState<boolean>(false);
+  const { category, id } = useParams();
+  const { isLoading, translateToWookiee } = useSelector(
+    (state: RootState) => ({
+      isLoading: state.search.loading,
+      translateToWookiee: state.search.translateToWookiee,
+    }),
+    shallowEqual,
+  );
   const dispatch = useDispatch();
 
-  const handleSetLoading = (loading: boolean) => {
-    dispatch(setLoading(loading));
+  const handleSetLoading = useCallback(
+    (loading: boolean) => {
+      dispatch(setLoading(loading));
+    },
+    [dispatch],
+  );
+
+  const handlesWookiee = (changeLanguage: boolean) => {
+    dispatch(setTranslateToWookiee(changeLanguage));
   };
 
   useEffect(() => {
     const fetchDetails = async () => {
       handleSetLoading(true);
-      const queryString = `${id}${location.search}`;
+
+      if (category === 'films') {
+        setHideWookie(true);
+      }
 
       try {
         const response = await fetch(
-          `http://localhost:1234/search/${queryString}`,
+          `http://localhost:1234/search/${category}/${id}${translateToWookiee ? '?format=wookiee' : ''}`,
           {
             credentials: 'include',
           },
         );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
         const result = await response.json();
 
-        const { created, edited, url, ...filteredResult } = result;
+        const {
+          created,
+          edited,
+          url,
+          oarcworaaowowa,
+          wowaahaowowa,
+          hurcan,
+          ...filteredResult
+        } = result;
 
         const detailsArray = Object.entries(filteredResult).map(
-          ([key, value]) => {
-            return [key, String(value)];
-          },
+          ([key, value]) => [key, String(value)],
         );
 
         const fetchRelatedData = async (url: string) => {
@@ -43,11 +71,15 @@ function Chosen() {
           if (!apiUrlPart) return null;
           try {
             const response = await fetch(
-              `http://localhost:1234/search/${apiUrlPart}`,
+              `http://localhost:1234/search/detail/${apiUrlPart}`,
               {
                 credentials: 'include',
               },
             );
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
 
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
@@ -88,6 +120,12 @@ function Chosen() {
                 const fetchedData = await fetchRelatedData(enemyInfoDetails[1]);
                 return [enemyInfoDetails[0], fetchedData];
               }
+            }
+            if (enemyInfoDetails[1].includes(',') && translateToWookiee) {
+              return [
+                enemyInfoDetails[0],
+                enemyInfoDetails[1].split(',').filter(Boolean),
+              ];
             } else {
               return enemyInfoDetails;
             }
@@ -95,19 +133,20 @@ function Chosen() {
         );
 
         setDetails(enrichedDetails);
+        setError(null);
       } catch (error) {
+        console.error('Error fetching details:', error);
+        setError('An error occurred, try again');
         if (!getCookie('session')) {
           window.location.href = '/login';
         }
-
-        console.error('Error fetching details:', error);
       } finally {
         handleSetLoading(false);
       }
     };
 
     fetchDetails();
-  }, []);
+  }, [handleSetLoading, category, id, translateToWookiee]);
 
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
@@ -119,9 +158,13 @@ function Chosen() {
     <div className="w-full h-screen flex justify-center items-center mt-auto">
       <PacmanLoader color="#4f46e5" size={40} />
     </div>
+  ) : error ? (
+    <div className="w-full h-screen flex justify-center items-center mt-auto">
+      <p className="text-red-600">{error}</p>{' '}
+    </div>
   ) : (
     <>
-      <div className="flex items-center">
+      <div className="flex items-center mb-5">
         <a
           className="inline-block rounded-full border border-indigo-600 p-3 text-indigo-600 hover:bg-indigo-600 hover:text-white focus:outline-none focus:ring active:bg-indigo-500 ml-5 mt-2"
           href="/"
@@ -144,6 +187,32 @@ function Chosen() {
         <h1 className="mx-auto my-5 text-3xl font-semibold text-gray-800 p-4 rounded-md border-b-4 border-indigo-600">
           Detailed Information
         </h1>
+
+        {hideWookie ? null : (
+          <div className="flex items-center mr-5">
+            <label
+              htmlFor="AcceptConditions"
+              className="relative inline-block h-8 w-12 cursor-pointer [-webkit-tap-highlight-color:_transparent]"
+            >
+              <input
+                type="checkbox"
+                id="AcceptConditions"
+                className="peer sr-only"
+                checked={translateToWookiee}
+                onChange={() => handlesWookiee(!translateToWookiee)}
+              />
+
+              <span className="absolute inset-0 m-auto h-2 rounded-full bg-gray-300"></span>
+
+              <span className="absolute inset-y-0 start-0 m-auto size-6 rounded-full bg-gray-500 transition-all peer-checked:start-6 peer-checked:[&_>_*]:scale-0">
+                <span className="absolute inset-0 m-auto size-4 rounded-full bg-gray-200 transition">
+                  {' '}
+                </span>
+              </span>
+            </label>
+            <span className="ml-3">Wookie</span>
+          </div>
+        )}
       </div>
 
       <div className="flow-root rounded-lg border border-gray-100 py-3 shadow-sm">
@@ -154,7 +223,11 @@ function Chosen() {
                 key={index}
                 className="grid grid-cols-1 gap-1 p-3 sm:grid-cols-3 sm:gap-4"
               >
-                <dt className="font-medium text-gray-900">{detail[0]}</dt>
+                <dt className="font-medium text-gray-900">
+                  {detail[0].includes('_')
+                    ? detail[0].replace(/_/g, ' ')
+                    : detail[0]}
+                </dt>
                 <dd className="text-gray-700 sm:col-span-2">
                   {Array.isArray(detail[1])
                     ? detail[1].map((item: string, i: number) => (

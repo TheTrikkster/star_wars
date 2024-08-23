@@ -10,6 +10,7 @@ interface SearchState {
   loading: boolean;
   searchParam: string | null;
   searchInput: string;
+  translateToWookiee: boolean;
 }
 
 const initialState: SearchState = {
@@ -20,6 +21,7 @@ const initialState: SearchState = {
   loading: true,
   searchParam: null,
   searchInput: '',
+  translateToWookiee: false,
 };
 
 export const searchSlice = createSlice({
@@ -52,6 +54,9 @@ export const searchSlice = createSlice({
     setSearchInput: (state, action: PayloadAction<string>) => {
       state.searchInput = action.payload;
     },
+    setTranslateToWookiee: (state, action: PayloadAction<boolean>) => {
+      state.translateToWookiee = action.payload;
+    },
   },
 });
 
@@ -63,6 +68,7 @@ export const {
   setLoading,
   setSearchParam,
   setSearchInput,
+  setTranslateToWookiee,
 } = searchSlice.actions;
 
 export default searchSlice.reducer;

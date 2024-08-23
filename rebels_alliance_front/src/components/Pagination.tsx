@@ -6,9 +6,8 @@ import { setCurrentPage } from '../redux/searchSlice';
 
 function Pagination() {
   const navigate = useNavigate();
-  const { selectedCategory, enemyInfo, totalPages, currentPage } = useSelector(
+  const { enemyInfo, totalPages, currentPage } = useSelector(
     (state: RootState) => ({
-      selectedCategory: state.search.selected,
       enemyInfo: state.search.enemyInfo,
       totalPages: state.search.pages,
       currentPage: state.search.currentPage,
@@ -53,7 +52,15 @@ function Pagination() {
     navigate(`/choosen/${id}`);
   };
 
-  return (
+  return enemyInfo.length === 0 ? (
+    <div className="bg-white p-4 border border-gray-300 rounded-md shadow-sm max-w-sm mx-auto mt-4">
+      <h2 className="text-lg font-semibold text-red-600 mb-2">Not Found</h2>
+      <p className="text-gray-700 mb-4">No results found for your search.</p>
+      <a href="/" className="text-blue-500 hover:underline">
+        Back to Home
+      </a>
+    </div>
+  ) : (
     <div className="rounded-lg border border-gray-200">
       <div className="overflow-x-auto rounded-t-lg">
         <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
@@ -64,7 +71,7 @@ function Pagination() {
                   key={index}
                   className="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                 >
-                  {header}
+                  {header.includes('_') ? header.replace(/_/g, ' ') : header}
                 </th>
               ))}
             </tr>
@@ -72,15 +79,18 @@ function Pagination() {
 
           <tbody className="divide-y divide-gray-200">
             {enemyInfo.map((enemyInfo, index: number) => {
-              const displayName =
-                selectedCategory === 'films' ? enemyInfo.title : enemyInfo.name;
+              const baseUrl = 'https://swapi.dev/api/';
+
+              let chosen: string = '';
+
+              if (typeof enemyInfo.url === 'string') {
+                chosen = enemyInfo.url.substring(baseUrl.length);
+              }
 
               return (
                 <tr
                   key={index}
-                  onClick={() =>
-                    handleRowClick(`${selectedCategory}?search=${displayName}`)
-                  }
+                  onClick={() => handleRowClick(chosen)}
                   className="cursor-pointer"
                 >
                   {Object.entries(enemyInfo as Record<string, string | number>)
@@ -103,7 +113,7 @@ function Pagination() {
       <div className="rounded-b-lg border-t border-gray-200 px-4 py-2">
         <ol className="flex justify-end gap-1 text-xs font-medium">
           <li onClick={() => handlePageChange(currentPage - 1)}>
-            <a className="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 cursor-pointer">
+            <button className="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 cursor-pointer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="size-3"
@@ -116,7 +126,7 @@ function Pagination() {
                   clipRule="evenodd"
                 />
               </svg>
-            </a>
+            </button>
           </li>
 
           {pageNumbers.map((page) => (
@@ -125,7 +135,7 @@ function Pagination() {
               onClick={() => handlePageChange(page)}
               className="cursor-pointer"
             >
-              <a
+              <button
                 className={`block size-8 rounded border ${
                   currentPage === page
                     ? 'border-blue-600 bg-blue-600 text-white'
@@ -133,12 +143,12 @@ function Pagination() {
                 } text-center leading-8`}
               >
                 {page}
-              </a>
+              </button>
             </li>
           ))}
 
           <li onClick={() => handlePageChange(currentPage + 1)}>
-            <a className="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 cursor-pointer">
+            <button className="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 cursor-pointer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="size-3"
@@ -151,7 +161,7 @@ function Pagination() {
                   clipRule="evenodd"
                 />
               </svg>
-            </a>
+            </button>
           </li>
         </ol>
       </div>

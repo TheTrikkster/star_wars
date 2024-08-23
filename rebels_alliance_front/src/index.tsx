@@ -5,7 +5,7 @@ import reportWebVitals from './reportWebVitals';
 import { Route, BrowserRouter, Routes } from 'react-router-dom';
 import Home from './pages/home/App';
 import Login from './pages/login/Login';
-import Chosen from './pages/chosen/Choosen';
+import Chosen from './pages/chosen/Chosen';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import NotFound from './pages/not-found/NotFound';
@@ -20,7 +20,7 @@ root.render(
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="login" element={<Login />} />
-          <Route path="choosen/:id" element={<Chosen />} />
+          <Route path="choosen/:category/:id" element={<Chosen />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

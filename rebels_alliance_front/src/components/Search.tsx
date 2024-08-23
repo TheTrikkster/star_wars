@@ -38,7 +38,7 @@ const SearchWithDropdown = () => {
     dispatch(setSearchInput(''));
   };
 
-  const handleKeyDownSearch = () => {
+  const handleSearch = () => {
     dispatch(setSearchParam(searchInput));
     dispatch(setCurrentPage(1));
   };
@@ -63,10 +63,10 @@ const SearchWithDropdown = () => {
     };
   }, []);
 
-  const handleSearchInputKeyDown = debounce(
+  const handleSearchKeyDown = debounce(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter') {
-        handleKeyDownSearch();
+        handleSearch();
       }
     },
     500,
@@ -135,11 +135,11 @@ const SearchWithDropdown = () => {
           value={searchInput}
           className="w-96 rounded-md border border-gray-200 pl-5 py-2.5 pr-10 shadow-sm sm:text-sm"
           onChange={(event) => handleInputSearch(event.target.value)}
-          onKeyDown={handleSearchInputKeyDown}
+          onKeyDown={handleSearchKeyDown}
         />
         <span
           className="absolute inset-y-0 right-0 grid w-10 place-content-center border-l rounded-md"
-          onClick={handleKeyDownSearch}
+          onClick={handleSearch}
         >
           <button type="button" className="text-gray-600 hover:text-gray-700">
             <span className="sr-only">Search</span>
