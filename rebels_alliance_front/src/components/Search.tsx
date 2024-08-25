@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch, shallowEqual } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   setSelected,
   setSearchParam,
@@ -7,6 +7,7 @@ import {
   setSearchInput,
 } from '../redux/searchSlice';
 import { RootState } from '../redux/store';
+import { makeSelectFieldsWithKeys, debounce } from '../utils/utils';
 
 const SearchWithDropdown = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -21,14 +22,22 @@ const SearchWithDropdown = () => {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const selectCategoryAndSearchInput = makeSelectFieldsWithKeys({
+    selectedCategory: (state: RootState) => state.search.selected,
+    searchInput: (state: RootState) => state.search.searchInput,
+  });
+
   const { selectedCategory, searchInput } = useSelector(
-    (state: RootState) => ({
-      selectedCategory: state.search.selected,
-      searchInput: state.search.searchInput,
-    }),
-    shallowEqual,
+    selectCategoryAndSearchInput,
   );
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleCategorySelect = (category: string) => {
     dispatch(setSelected(category));
@@ -55,13 +64,6 @@ const SearchWithDropdown = () => {
       setIsDropdownOpen(false);
     }
   };
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const handleSearchKeyDown = debounce(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -163,22 +165,5 @@ const SearchWithDropdown = () => {
     </div>
   );
 };
-
-function debounce(
-  func: (event: React.KeyboardEvent<HTMLInputElement>) => void,
-  delay: number,
-) {
-  let timeoutId: NodeJS.Timeout;
-
-  return function (
-    this: void,
-    ...args: [React.KeyboardEvent<HTMLInputElement>]
-  ) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-}
 
 export default SearchWithDropdown;

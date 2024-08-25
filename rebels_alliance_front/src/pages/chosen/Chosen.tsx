@@ -1,21 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { RootState } from '../../redux/store';
 import { setLoading, setTranslateToWookiee } from '../../redux/searchSlice';
 import { PacmanLoader } from 'react-spinners';
+import { makeSelectFieldsWithKeys } from '../../utils/utils';
 
 function Chosen() {
   const [details, setDetails] = useState<null | string[][]>(null);
   const [error, setError] = useState<string | null>(null);
   const [hideWookie, setHideWookie] = useState<boolean>(false);
   const { category, id } = useParams();
+  const selectLoadingAndTranslateToWookiee = makeSelectFieldsWithKeys({
+    isLoading: (state: RootState) => state.search.loading,
+    translateToWookiee: (state: RootState) => state.search.translateToWookiee,
+  });
   const { isLoading, translateToWookiee } = useSelector(
-    (state: RootState) => ({
-      isLoading: state.search.loading,
-      translateToWookiee: state.search.translateToWookiee,
-    }),
-    shallowEqual,
+    selectLoadingAndTranslateToWookiee,
   );
   const dispatch = useDispatch();
 
@@ -25,10 +26,6 @@ function Chosen() {
     },
     [dispatch],
   );
-
-  const handlesWookiee = (changeLanguage: boolean) => {
-    dispatch(setTranslateToWookiee(changeLanguage));
-  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -137,9 +134,6 @@ function Chosen() {
       } catch (error) {
         console.error('Error fetching details:', error);
         setError('An error occurred, try again');
-        if (!getCookie('session')) {
-          window.location.href = '/login';
-        }
       } finally {
         handleSetLoading(false);
       }
@@ -148,10 +142,8 @@ function Chosen() {
     fetchDetails();
   }, [handleSetLoading, category, id, translateToWookiee]);
 
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
+  const handlesWookiee = (changeLanguage: boolean) => {
+    dispatch(setTranslateToWookiee(changeLanguage));
   };
 
   return isLoading ? (

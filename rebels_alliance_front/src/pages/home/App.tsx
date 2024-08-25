@@ -3,21 +3,21 @@ import Search from '../../components/Search';
 import Pagination from '../../components/Pagination';
 import { PacmanLoader } from 'react-spinners';
 import { RootState } from '../../redux/store';
-import { useSelector, useDispatch, shallowEqual } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { setPages, setEnemyInfo, setLoading } from '../../redux/searchSlice';
+import { makeSelectFieldsWithKeys } from '../../utils/utils';
 
 function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const { selectedCategory, currentPage, searchQuery, isLoading } = useSelector(
-    (state: RootState) => ({
-      selectedCategory: state.search.selected,
-      currentPage: state.search.currentPage,
-      searchQuery: state.search.searchParam,
-      isLoading: state.search.loading,
-    }),
-    shallowEqual,
-  );
+  const selectedFromSelector = makeSelectFieldsWithKeys({
+    selectedCategory: (state: RootState) => state.search.selected,
+    currentPage: (state: RootState) => state.search.currentPage,
+    searchQuery: (state: RootState) => state.search.searchParam,
+    isLoading: (state: RootState) => state.search.loading,
+  });
+  const { selectedCategory, currentPage, searchQuery, isLoading } =
+    useSelector(selectedFromSelector);
 
   const dispatch = useDispatch();
 
@@ -45,9 +45,6 @@ function Home() {
         dispatch(setPages(Math.ceil(enemyInfo.count / 10)));
         dispatch(setEnemyInfo(enemyInfo.results));
       } catch (error) {
-        if (!getCookie('session')) {
-          window.location.href = '/login';
-        }
         setError('An error occurred, try again');
         console.error('Error fetching data:', error);
       } finally {
@@ -57,12 +54,6 @@ function Home() {
 
     loadData();
   }, [selectedCategory, currentPage, searchQuery, dispatch]);
-
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-  };
 
   return isLoading ? (
     <div className="w-full h-screen flex justify-center items-center">

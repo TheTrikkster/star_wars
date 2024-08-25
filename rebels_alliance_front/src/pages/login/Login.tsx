@@ -1,34 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { RootState } from '../../redux/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoading, setError } from '../../redux/searchSlice';
+import { getCookie, makeSelectFieldsWithKeys } from '../../utils/utils';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const selectLoadingAndError = makeSelectFieldsWithKeys({
+    isLoading: (state: RootState) => state.search.loading,
+    error: (state: RootState) => state.search.error,
+  });
 
-  useEffect(() => {
-    const sessionCookie = getCookie('session');
+  const { isLoading, error } = useSelector(selectLoadingAndError);
+  const dispatch = useDispatch();
 
-    if (sessionCookie) {
-      navigate('/');
-    }
-  }, [navigate]);
+  const sessionCookie = getCookie();
 
-  const getCookie = (name: string): string | undefined => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop()?.split(';').shift();
-    }
-    return undefined;
+  if (sessionCookie) {
+    return <Navigate to="/" />;
+  }
+
+  const handleError = (value: string | null) => {
+    dispatch(setError(value));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    dispatch(setLoading(true));
+    handleError('');
 
     try {
       const response = await fetch('http://localhost:1234/login', {
@@ -45,12 +47,12 @@ const Login = () => {
       if (response.ok) {
         navigate('/');
       } else {
-        setError(data.error || 'Invalid username or password');
+        handleError(data.error || 'Invalid username or password');
       }
     } catch (err) {
       setError('An error occurred while trying to log in.');
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -111,12 +113,14 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoading}
               className={`flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm ${
-                loading ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-500'
+                isLoading
+                  ? 'bg-indigo-400'
+                  : 'bg-indigo-600 hover:bg-indigo-500'
               } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>

@@ -100,15 +100,15 @@ const init = async () => {
         }
     
         try {
-          const searchResponse = await fetch(`https://swapi.dev/api/${id}`);
+          const response = await fetch(`https://swapi.dev/api/${id}`);
     
-          if (!searchResponse.ok) {
-            const errorText = await searchResponse.text();
-            console.error(`SWAPI Error: ${searchResponse.status} - ${errorText}`);
-            return h.response({ error: `SWAPI Error: ${searchResponse.status}`, message: errorText }).code(searchResponse.status);
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Fetch Error: ${response.status} - ${errorText}`);
+            return h.response({ error: `SWAPI Error: ${response.status}` }).code(response.status);
           }
     
-          const result = await searchResponse.json();
+          const result = await response.json();
     
           if (result) {
             return h.response(result.title || result.name).code(200);
