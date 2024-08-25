@@ -11,6 +11,7 @@ interface SearchState {
   searchParam: string | null;
   searchInput: string;
   translateToWookiee: boolean;
+  error: string | null;
 }
 
 const initialState: SearchState = {
@@ -18,10 +19,11 @@ const initialState: SearchState = {
   enemyInfo: [],
   pages: 0,
   currentPage: 1,
-  loading: true,
+  loading: false,
   searchParam: null,
   searchInput: '',
   translateToWookiee: false,
+  error: null,
 };
 
 export const searchSlice = createSlice({
@@ -57,6 +59,9 @@ export const searchSlice = createSlice({
     setTranslateToWookiee: (state, action: PayloadAction<boolean>) => {
       state.translateToWookiee = action.payload;
     },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
   },
 });
 
@@ -69,6 +74,7 @@ export const {
   setSearchParam,
   setSearchInput,
   setTranslateToWookiee,
+  setError,
 } = searchSlice.actions;
 
 export default searchSlice.reducer;

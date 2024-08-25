@@ -9,6 +9,7 @@ import Chosen from './pages/chosen/Chosen';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import NotFound from './pages/not-found/NotFound';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -18,9 +19,11 @@ root.render(
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
           <Route path="login" element={<Login />} />
-          <Route path="choosen/:category/:id" element={<Chosen />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Home />} />
+            <Route path="choosen/:category/:id" element={<Chosen />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

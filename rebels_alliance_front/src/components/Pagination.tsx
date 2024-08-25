@@ -1,33 +1,33 @@
 import React from 'react';
-import { useSelector, useDispatch, shallowEqual } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../redux/store';
 import { setCurrentPage } from '../redux/searchSlice';
+import { makeSelectFieldsWithKeys } from '../utils/utils';
 
 function Pagination() {
   const navigate = useNavigate();
-  const { enemyInfo, totalPages, currentPage } = useSelector(
-    (state: RootState) => ({
-      enemyInfo: state.search.enemyInfo,
-      totalPages: state.search.pages,
-      currentPage: state.search.currentPage,
-    }),
-    shallowEqual,
-  );
+  const selectedFromSelector = makeSelectFieldsWithKeys({
+    enemyInfo: (state: RootState) => state.search.enemyInfo,
+    totalPages: (state: RootState) => state.search.pages,
+    currentPage: (state: RootState) => state.search.currentPage,
+  });
+  const { enemyInfo, totalPages, currentPage } =
+    useSelector(selectedFromSelector);
 
   const dispatch = useDispatch();
-
-  const tableHeaders = enemyInfo[0]
-    ? Object.keys(enemyInfo[0])
-        .slice(0, 5)
-        .filter((key) => key !== 'opening_crawl')
-    : [];
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       dispatch(setCurrentPage(newPage));
     }
   };
+
+  const tableHeaders = enemyInfo[0]
+    ? Object.keys(enemyInfo[0])
+        .slice(0, 5)
+        .filter((key) => key !== 'opening_crawl')
+    : [];
 
   const generatePageNumbers = () => {
     const maxPagesToShow = 3;
@@ -62,7 +62,7 @@ function Pagination() {
     </div>
   ) : (
     <div className="rounded-lg border border-gray-200">
-      <div className="overflow-x-auto rounded-t-lg">
+      <main className="overflow-x-auto rounded-t-lg">
         <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
           <thead className="text-left">
             <tr>
@@ -108,7 +108,7 @@ function Pagination() {
             })}
           </tbody>
         </table>
-      </div>
+      </main>
 
       <div className="rounded-b-lg border-t border-gray-200 px-4 py-2">
         <ol className="flex justify-end gap-1 text-xs font-medium">
