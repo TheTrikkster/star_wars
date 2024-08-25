@@ -5,7 +5,7 @@
 Avant de commencer, assurez-vous d'avoir installé les dépendances nécessaires. Vous aurez besoin de :
 
 - [Node.js](https://nodejs.org/)
-- [Yarn](https://yarnpkg.com/)
+- [Yarn](https://yarnpkg.com/) (ou [npm](https://www.npmjs.com/) si vous préférez)
 
 ## Installation et Exécution
 
